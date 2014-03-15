@@ -14,7 +14,7 @@ def get_modified_time(file_name):
 class CachedTests:
     """Recently processed test files"""
 
-    VERSION = "2"
+    VERSION = "5"
 
     def __init__(self):
         self.cached = {}
@@ -170,7 +170,7 @@ def read_test_from_line(line):
     """Reads test from single line"""
 
     pattern = re.compile(
-        r"TEST_MAKE\s*\(\s*([a-zA-Z][0-9a-zA-Z]*)\s*,\s*([a-zA-Z][0-9a-zA-Z]*)\s*\)"
+        r"TEST_MAKE\s*\(\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*,\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*\)"
     )
     match = pattern.search(line)
     if not match:
@@ -204,11 +204,13 @@ def format_main_file(all_tests):
             result += "TEST_DECLARE({0}, {1});\n".format(test["test"], case)
 
     result += "inline\n"
-    result += "void RunTests() {\n"
+    result += "void RunTests(int argc = 0, char* argv[] = 0) {\n"
+    result += "  shurup::Settings settings;\n"
+    result += "  settings.ParseCommandLineArguments(argc, argv);\n"
     for test in all_tests:
         result += "  TEST_START_GROUP({0});\n".format(test["test"])
         for case in test["cases"]:
-            result += "  TEST_CALL({0}, {1});\n".format(test["test"], case)
+            result += "  TEST({0}, {1});\n".format(test["test"], case)
         result += "  TEST_END_GROUP({0});\n".format(test["test"])
     result += "}"
 
